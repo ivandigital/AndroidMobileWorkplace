@@ -76,12 +76,14 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.vk.sdk.VKUIHelper;
 
 import java.util.Calendar;
+import java.util.concurrent.ExecutionException;
 
 import ru.lizaalert.hotline.ChannelHandler;
 import ru.lizaalert.hotline.GoogleSheetManager;
@@ -295,8 +297,29 @@ public class InputFormFragment extends Fragment implements View.OnClickListener,
     }
 
     private void saveToGoogleSheet() {
-        GoogleSheetManager gsheet = new GoogleSheetManager(getActivity(), etPhone.getText().toString(), etCity.getText().toString(), etName.getText().toString(), etBirthday.getText().toString(), etDescr.getText().toString());
-        gsheet.execute();
+        boolean result = false;
+
+        try {
+            gsheet = new GoogleSheetManager(etPhone.getText().toString(), etCity.getText().toString(), etName.getText().toString(), etBirthday.getText().toString(), etDescr.getText().toString());
+            result = gsheet.execute().get();
+        }
+        catch(IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (result == true) {
+                Toast.makeText(getActivity(), "Successfully saved", Toast.LENGTH_LONG).show();
+            }
+            else {
+                Toast.makeText(getActivity(), "Oops... An error occurred", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override

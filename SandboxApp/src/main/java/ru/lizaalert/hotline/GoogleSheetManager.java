@@ -80,7 +80,6 @@ import com.google.gdata.util.ServiceException;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Calendar;
 import java.util.List;
 
 public class GoogleSheetManager extends AsyncTask<Object, Void, Boolean> {
@@ -99,28 +98,25 @@ public class GoogleSheetManager extends AsyncTask<Object, Void, Boolean> {
     private URL urlFeedList;
     private ListFeed feedList;
 
-    private Context context;
-
     private String phone;
     private String city;
     private String name;
     private String birthday;
     private String description;
 
-    public GoogleSheetManager(Context context, String phone, String city, String name, String birthday, String description) {
-        this.context = context;
+    public GoogleSheetManager(String phone, String city, String name, String birthday, String description) {
         this.phone = phone;
         this.city = city;
         this.name = name;
         this.birthday = birthday;
         this.description = description;
+
+        service = new SpreadsheetService("ru.lizaalert.hotline");
+        service.setProtocolVersion(SpreadsheetService.Versions.V3);
     }
 
     @Override
     protected Boolean doInBackground(Object... arg) {
-        // get parameters
-        service = new SpreadsheetService("LizaAlert.GoogleSpreadsheetIntegration");
-        service.setProtocolVersion(SpreadsheetService.Versions.V3);
 
         try {
             service.setUserCredentials(GOOGLE_LOGIN, GOOGLE_PWD);
@@ -188,13 +184,4 @@ public class GoogleSheetManager extends AsyncTask<Object, Void, Boolean> {
         return true;
     }
 
-    @Override
-    protected void onPostExecute(Boolean result) {
-        if (result == true) {
-            Toast.makeText(context, "Successfully saved", Toast.LENGTH_LONG).show();
-        }
-        else {
-            Toast.makeText(context, "Ops... An error occurred", Toast.LENGTH_LONG).show();
-        }
-    }
 }
