@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014 Igor Tseglevskiy <igor.tseglevskiy@gmail.com>
+    Copyright (c) 2014 Ivan Demushkin <ivndgtl@gmail.com>
     Copyright (c) 2014 Other contributors as noted in the AUTHORS file.
 
     Этот файл является частью приложения "Мобильное рабочее место оператора
@@ -60,10 +60,6 @@
 
 package ru.lizaalert.hotline;
 
-/**
- * Created by Ivan Demushkin on 30.01.2015
- */
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -82,21 +78,22 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import ru.lizaalert.hotline.lib.settings.Settings;
+
 public class GoogleSheetManager extends AsyncTask<Object, Void, Boolean> {
 
     private static final String TAG = "8800";
 
     private static final String SHEET_META_URL = "https://spreadsheets.google.com/feeds/spreadsheets/private/full";
     private static final String SHEET_NAME = "LizaAlert data";
-    private static final String GOOGLE_LOGIN = "lizaalert.mobile";
-    private static final String GOOGLE_PWD = "LiZa@lErT";
 
     private SpreadsheetService service;
     private SpreadsheetFeed feedMain;
     private SpreadsheetEntry sheet;
     private WorksheetEntry worksheet;
-    private URL urlFeedList;
     private ListFeed feedList;
+
+    private Context context;
 
     private String phone;
     private String city;
@@ -104,7 +101,8 @@ public class GoogleSheetManager extends AsyncTask<Object, Void, Boolean> {
     private String birthday;
     private String description;
 
-    public GoogleSheetManager(String phone, String city, String name, String birthday, String description) {
+    public GoogleSheetManager(Context context, String phone, String city, String name, String birthday, String description) {
+        this.context = context;
         this.phone = phone;
         this.city = city;
         this.name = name;
@@ -118,8 +116,13 @@ public class GoogleSheetManager extends AsyncTask<Object, Void, Boolean> {
     @Override
     protected Boolean doInBackground(Object... arg) {
 
+        String token = Settings.instance(context).getAccountToken();
+        if (token == null || token.length() < 1) {
+            return false;
+        }
+
         try {
-            service.setUserCredentials(GOOGLE_LOGIN, GOOGLE_PWD);
+            service.setAuthSubToken(token);
 
             feedMain = service.getFeed(new URL(SHEET_META_URL), SpreadsheetFeed.class);
             List<SpreadsheetEntry> spreadsheets = feedMain.getEntries();
@@ -184,4 +187,13 @@ public class GoogleSheetManager extends AsyncTask<Object, Void, Boolean> {
         return true;
     }
 
+    @Override
+    protected void onPostExecute(Boolean result) {
+        if (result == true) {
+            Toast.makeText(context, "Successfully saved", Toast.LENGTH_LONG).show();
+        }
+        else {
+            Toast.makeText(context, "Oops... An error occurred", Toast.LENGTH_LONG).show();
+        }
+    }
 }

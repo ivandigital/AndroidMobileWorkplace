@@ -73,30 +73,27 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.vk.sdk.VKUIHelper;
 
 import java.util.Calendar;
-import java.util.concurrent.ExecutionException;
 
 import ru.lizaalert.hotline.ChannelHandler;
 import ru.lizaalert.hotline.GoogleSheetManager;
 import ru.lizaalert.hotline.R;
+import ru.lizaalert.hotline.auth.Auth;
 import ru.lizaalert.hotline.lib.settings.Settings;
 import ru.lizaalert.hotline.SmsChannel;
 import ru.lizaalert.hotline.VkManager;
 import ru.lizaalert.hotline.lib.settings.SettingsConsts;
 import ru.lizaalert.hotline.mail.AsyncSmtpSender;
 
-/**
- * Created by defuera on 09/10/14.
- */
 public class InputFormFragment extends Fragment implements View.OnClickListener, ChannelHandler {
 
 
@@ -200,6 +197,7 @@ public class InputFormFragment extends Fragment implements View.OnClickListener,
         findViewById(R.id.btn_vk).setOnClickListener(this);
         findViewById(R.id.btn_skype).setOnClickListener(this);
         findViewById(R.id.btn_gsheet).setOnClickListener(this);
+        findViewById(R.id.btn_auth).setOnClickListener(this);
     }
 
     @Override
@@ -253,7 +251,16 @@ public class InputFormFragment extends Fragment implements View.OnClickListener,
             case R.id.btn_gsheet:
                 saveToGoogleSheet();
                 break;
+            case R.id.btn_auth:
+                goToAuth();
+                break;
         }
+    }
+
+    private void goToAuth() {
+        Log.d("8800", "go to auth...");
+        Intent intent = new Intent(getActivity(), Auth.class);
+        startActivity(intent);
     }
 
     private void sendSkype() {
@@ -297,29 +304,8 @@ public class InputFormFragment extends Fragment implements View.OnClickListener,
     }
 
     private void saveToGoogleSheet() {
-        boolean result = false;
-
-        try {
-            gsheet = new GoogleSheetManager(etPhone.getText().toString(), etCity.getText().toString(), etName.getText().toString(), etBirthday.getText().toString(), etDescr.getText().toString());
-            result = gsheet.execute().get();
-        }
-        catch(IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        finally {
-            if (result == true) {
-                Toast.makeText(getActivity(), "Successfully saved", Toast.LENGTH_LONG).show();
-            }
-            else {
-                Toast.makeText(getActivity(), "Oops... An error occurred", Toast.LENGTH_LONG).show();
-            }
-        }
+        GoogleSheetManager gsheet = new GoogleSheetManager(getActivity().getApplicationContext(), etPhone.getText().toString(), etCity.getText().toString(), etName.getText().toString(), etBirthday.getText().toString(), etDescr.getText().toString());
+        gsheet.execute();
     }
 
     @Override
